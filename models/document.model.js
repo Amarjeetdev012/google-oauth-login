@@ -1,24 +1,21 @@
 import mongoose from 'mongoose';
 
-const UserSchema = new mongoose.Schema({
+const documentSchema = new mongoose.Schema({
   googleId: {
     type: String,
     required: true,
   },
-  displayName: {
+  filename: {
     type: String,
     required: true,
   },
-  firstName: {
+  filetype: {
     type: String,
     required: true,
   },
-  lastName: {
+  file: {
     type: String,
     required: true,
-  },
-  accessToken: {
-    type: String,
   },
   createdAt: {
     type: Date,
@@ -26,6 +23,6 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
-const User = mongoose.model('User', UserSchema);
+const Document = mongoose.model('Document', documentSchema);
 
-export default User;
+export default Document;
