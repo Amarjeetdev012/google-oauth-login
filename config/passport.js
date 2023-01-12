@@ -55,15 +55,14 @@ router.get(
   passport.authenticate('google', {
     successRedirect: '/auth/google/success',
     failureRedirect: '/auth/google/failure',
-  }),
-  (req, res, next) => {
-    res.redirect('/log');
-  }
+  })
 );
 
-router.get('/auth/google/success', (req,res) => {
-    res.send({msg:'hey yor are login successfully'})
-})
+router.get('/auth/google/success', (req, res) => {
+  // console.log(req.user.displayName)
+  res.render('home', { name: req.user.displayName });
+});
+
 router.get('/logout', (req, res) => {
   req.logout();
   res.redirect('/');
