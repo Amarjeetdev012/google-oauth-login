@@ -61,6 +61,9 @@ router.get(
   }
 );
 
+router.get('/auth/google/success', (req,res) => {
+    res.send({msg:'hey yor are login successfully'})
+})
 router.get('/logout', (req, res) => {
   req.logout();
   res.redirect('/');
