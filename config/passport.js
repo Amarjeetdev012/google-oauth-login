@@ -63,7 +63,8 @@ router.get(
       'https://www.googleapis.com/auth/drive',
       'https://www.googleapis.com/auth/userinfo.profile',
     ],
-    accessType: 'offline',
+    accessType: 'online',
+    prompt: 'consent'
   })
 );
 
@@ -103,13 +104,12 @@ router.post('/auth/google/upload', async (req, res) => {
     version: 'v3',
     auth: OAuth2Client,
   });
-  const stream = await fs.createReadStream(dirPath);
   const fileMetadata = {
     name: files[0].originalname,
   };
   const media = {
     mimeType: files[0].mimetype,
-    body: stream,
+    body: fs.createReadStream(dirPath),
   };
   const response = await drive.files.create(
     {
