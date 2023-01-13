@@ -63,7 +63,7 @@ router.get(
       'https://www.googleapis.com/auth/drive',
       'https://www.googleapis.com/auth/userinfo.profile',
     ],
-    accessType: 'online',
+    accessType: 'offline',
     prompt: 'consent'
   })
 );
@@ -98,7 +98,6 @@ router.post('/auth/google/upload', async (req, res) => {
   });
 
   const dirPath = path.join(__dirname, req.files[0].originalname);
-  console.log('dirPath', dirPath);
 
   const drive = google.drive({
     version: 'v3',
@@ -120,12 +119,10 @@ router.post('/auth/google/upload', async (req, res) => {
       if (err) {
         console.log('error', err);
       } else {
-        console.log('file', file);
         res.render('successResponse', { fileData: req.files[0].originalname });
       }
     }
   );
-  console.log('response', response);
 });
 
 export default router;
