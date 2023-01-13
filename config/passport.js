@@ -17,15 +17,17 @@ passport.use(
       passReqToCallback: true,
     },
     async function (request, accessToken, refreshToken, profile, done) {
+      console.log('refreshToken',refreshToken)
       const newUser = {
         googleId: profile.id,
         displayName: profile.displayName,
         firstName: profile.name.givenName,
         lastName: profile.name.familyName,
         accessToken: accessToken,
+        refreshToken: refreshToken,
       };
       try {
-        const user = await User.findOne({ googleId: profile.id });
+        let user = await User.findOne({ googleId: profile.id });
         if (user) {
           done(null, user);
         } else {
@@ -49,9 +51,15 @@ passport.deserializeUser((id, done) => {
   });
 });
 
-router.get('/auth/google', passport.authenticate('google', {
-  scope: ['https://www.googleapis.com/auth/drive', 'profile'],
-}))
+router.get(
+  '/auth/google',
+  passport.authenticate('google', {
+    scope: [
+      'https://www.googleapis.com/auth/drive',
+      'https://www.googleapis.com/auth/userinfo.profile',
+    ],accessType: 'offline'
+  })
+);
 
 router.get(
   '/auth/google/callback',
@@ -78,10 +86,26 @@ router.get('/auth/google/success', (req, res) => {
 
 router.post('/auth/google/upload', async (req, res) => {
   let files = req.files;
-  let token = req.user.accessToken;
+  let token = '';
+  let user = await User.findById(req.user._id).select({
+    accessToken: 1,
+    _id: 0,
+  });
+  if (user) {
+    token = user.accessToken;
+  } else {
+    token = req.user.token;
+  }
+
+  const OAuth2Client = new google.auth.OAuth2();
+  OAuth2Client.setCredentials({
+    access_token: token,
+    // access_token:
+    //   'ya29.a0AX9GBdWrRE-ldWU5GMZn2kshx5DVsbG3kbE71gYVQTpJ0lI883dwx4fOauOAMougsQgdeCVV7FdxeEHjRg3RkYuiu1q3l3Mpw8Q0Alhp56MpsDulW3QW82yt4Mmtd13yg0EkroBY9rf_zEOx5bZN6KgTLpzrfzkaCgYKAeUSAQASFQHUCsbCDEBONWuKpXIP3xZzweNJXg0166',
+  });
   const drive = google.drive({
     version: 'v3',
-    auth: token,
+    auth: OAuth2Client,
   });
 
   const fileMetadata = {
@@ -91,11 +115,10 @@ router.post('/auth/google/upload', async (req, res) => {
     mimeType: files[0].mimetype,
     // body: fs.createReadStream(files[0].originalname),
   };
-  await drive.files.create(
+  const response = await drive.files.create(
     {
       resource: fileMetadata,
       media: media,
-      fields: 'id',
     },
     (err, file) => {
       if (err) {
@@ -105,6 +128,7 @@ router.post('/auth/google/upload', async (req, res) => {
       }
     }
   );
+  res.render('successResponse', { fileData: req.files[0].originalname });
 });
 
 export default router;
