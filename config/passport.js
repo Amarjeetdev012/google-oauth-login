@@ -63,7 +63,7 @@ router.get(
       'https://www.googleapis.com/auth/drive',
       'https://www.googleapis.com/auth/userinfo.profile',
     ],
-    accessType: 'offline',
+    accessType: 'online',
     prompt: 'consent'
   })
 );
