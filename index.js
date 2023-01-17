@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import passport from 'passport';
 import { connectDatabase } from './database/mongoose.database.js';
+import MongoStore from 'connect-mongo';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import router from './config/passport.js';
@@ -18,12 +19,18 @@ app.set('view engine', 'ejs');
 app.use(cookieParser());
 app.use(multer().any());
 const PORT = process.env.PORT;
+
+const store = MongoStore.create({
+  mongoUrl: process.env.MONGO_URI,
+  autoRemove: 'native',
+});
 app.use(
   session({
     secret: 'keyboard cat',
     resave: false,
     saveUninitialized: true,
     cookie: { maxAge: 60000 },
+    store: store,
   })
 );
 connectDatabase();

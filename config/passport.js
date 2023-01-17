@@ -1,6 +1,7 @@
 import { Strategy as GoogleStrategy } from 'passport-google-oauth2';
 import express from 'express';
 import { google } from 'googleapis';
+import session from 'express-session';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
@@ -10,6 +11,7 @@ import User from '../models/user.js';
 const router = express.Router();
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { token } from 'morgan';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -64,7 +66,7 @@ router.get(
       'https://www.googleapis.com/auth/userinfo.profile',
     ],
     accessType: 'online',
-    prompt: 'consent'
+    prompt: 'consent',
   })
 );
 
@@ -77,10 +79,16 @@ router.get(
 );
 
 router.get('/auth/google/success', (req, res) => {
+  if (!req.session.passport) {
+    return res.render('error');
+  }
   res.render('home', { name: req.user.displayName });
 });
 
 router.post('/auth/google/upload', async (req, res) => {
+  if (!req.session.passport) {
+    return res.render('error');
+  }
   let files = req.files;
   let token = '';
   let user = await User.findById(req.user._id).select({
@@ -98,7 +106,6 @@ router.post('/auth/google/upload', async (req, res) => {
   });
 
   const dirPath = path.join(__dirname, req.files[0].originalname);
-
   const drive = google.drive({
     version: 'v3',
     auth: OAuth2Client,
@@ -110,6 +117,7 @@ router.post('/auth/google/upload', async (req, res) => {
     mimeType: files[0].mimetype,
     body: fs.createReadStream(dirPath),
   };
+
   const response = await drive.files.create(
     {
       resource: fileMetadata,
