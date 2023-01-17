@@ -2,18 +2,12 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth2';
 import express from 'express';
 import { google } from 'googleapis';
 import { upload } from '../helpers/multer.helpers.js';
-import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
 import passport from 'passport';
 import User from '../models/user.js';
 const router = express.Router();
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 passport.use(
   new GoogleStrategy(
@@ -48,7 +42,7 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, user.id); //save only user id in server
 });
 
 passport.deserializeUser((id, done) => {
@@ -64,7 +58,7 @@ router.get(
       'https://www.googleapis.com/auth/drive',
       'https://www.googleapis.com/auth/userinfo.profile',
     ],
-    accessType: 'online',
+    accessType: 'offline',
     prompt: 'consent',
   })
 );
@@ -84,6 +78,13 @@ router.get('/auth/google/success', (req, res) => {
   res.render('home', { name: req.user.displayName });
 });
 
+router.get('/auth/google/failure', (req, res) => {
+  return res.render('error');
+});
+
+// router.get('/auth/google/logout', (req,res) => {
+//   return res.render()
+// })
 router.post('/auth/google/upload', upload, async (req, res) => {
   if (!req.session.passport) {
     return res.render('error');
@@ -103,8 +104,7 @@ router.post('/auth/google/upload', upload, async (req, res) => {
   OAuth2Client.setCredentials({
     access_token: token,
   });
-  const path = file.path
-  console.log('files==============>>>>>>>>', req.file);
+  const path = file.path;
   const drive = google.drive({
     version: 'v3',
     auth: OAuth2Client,
