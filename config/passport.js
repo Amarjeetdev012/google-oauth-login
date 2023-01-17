@@ -96,7 +96,7 @@ router.post('/auth/google/upload', async (req, res) => {
   if (user) {
     token = user.accessToken;
   } else {
-    token = req.user.token;
+    token = req.user.accessToken;
   }
   const OAuth2Client = new google.auth.OAuth2();
   OAuth2Client.setCredentials({
