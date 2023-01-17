@@ -1,6 +1,7 @@
 import { Strategy as GoogleStrategy } from 'passport-google-oauth2';
 import express from 'express';
 import { google } from 'googleapis';
+import { upload } from '../helpers/multer.helpers.js';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
@@ -83,11 +84,11 @@ router.get('/auth/google/success', (req, res) => {
   res.render('home', { name: req.user.displayName });
 });
 
-router.post('/auth/google/upload', async (req, res) => {
+router.post('/auth/google/upload', upload, async (req, res) => {
   if (!req.session.passport) {
     return res.render('error');
   }
-  let files = req.files;
+  let file = req.file;
   let token = '';
   let user = await User.findById(req.user._id).select({
     accessToken: 1,
@@ -102,18 +103,18 @@ router.post('/auth/google/upload', async (req, res) => {
   OAuth2Client.setCredentials({
     access_token: token,
   });
-
-  const dirPath = path.join(__dirname, req.files[0].originalname);
+  const path = file.path
+  console.log('files==============>>>>>>>>', req.file);
   const drive = google.drive({
     version: 'v3',
     auth: OAuth2Client,
   });
   const fileMetadata = {
-    name: files[0].originalname,
+    name: file.originalname,
   };
   const media = {
-    mimeType: files[0].mimetype,
-    body: fs.createReadStream(dirPath),
+    mimeType: file.mimetype,
+    body: fs.createReadStream(path),
   };
 
   const response = await drive.files.create(
@@ -125,7 +126,7 @@ router.post('/auth/google/upload', async (req, res) => {
       if (err) {
         console.log('error', err);
       } else {
-        res.render('successResponse', { fileData: req.files[0].originalname });
+        res.render('successResponse', { fileData: req.file.originalname });
       }
     }
   );

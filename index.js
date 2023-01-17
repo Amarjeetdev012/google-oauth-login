@@ -13,11 +13,10 @@ import multer from 'multer';
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// app.use(express.static('public'));
 app.use(logger('dev'));
 app.set('view engine', 'ejs');
 app.use(cookieParser());
-app.use(multer().any());
+
 const PORT = process.env.PORT;
 
 const store = MongoStore.create({
@@ -29,7 +28,7 @@ app.use(
     secret: 'keyboard cat',
     resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: 60000 },
+    cookie: { maxAge: 39600 },
     store: store,
   })
 );
