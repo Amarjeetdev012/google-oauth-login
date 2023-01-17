@@ -1,7 +1,6 @@
 import { Strategy as GoogleStrategy } from 'passport-google-oauth2';
 import express from 'express';
 import { google } from 'googleapis';
-import session from 'express-session';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
@@ -11,7 +10,6 @@ import User from '../models/user.js';
 const router = express.Router();
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { token } from 'morgan';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
