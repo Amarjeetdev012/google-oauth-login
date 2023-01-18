@@ -7,6 +7,7 @@ dotenv.config();
 
 const GOOGLE_API_FOLDER_ID = process.env.GOOGLE_FOLDER_ID;
 
+// upload file in particular folder
 export const uploadFile = async (req, res) => {
   if (!req.session.passport) {
     return res.render('error');
@@ -60,6 +61,7 @@ export const uploadFile = async (req, res) => {
   );
 };
 
+// list all image file in
 export const listFile = async (req, res) => {
   if (!req.session.passport) {
     return res.render('error');
@@ -96,4 +98,47 @@ export const listFile = async (req, res) => {
       }
     }
   );
+};
+
+// delete file from drive using id
+export const deleteFile = async (req, res) => {
+  if (!req.session.passport) {
+    return res.render('error');
+  }
+  let token = '';
+  let user = await User.findById(req.user._id).select({
+    accessToken: 1,
+    _id: 0,
+  });
+  if (user) {
+    token = user.accessToken;
+  } else {
+    token = req.user.accessToken;
+  }
+  let id = req.body.id;
+  if (!id) {
+    return console.warn(
+      `this file ${id} is already deleted please check it again`
+    );
+  }
+  const OAuth2Client = new google.auth.OAuth2();
+
+  OAuth2Client.setCredentials({
+    access_token: token,
+  });
+
+  const drive = google.drive({
+    version: 'v3',
+    auth: OAuth2Client,
+  });
+
+  const response = await drive.files.delete({ fileId: id }, (err, file) => {
+    if (err) {
+      console.log('error', err.errors[0]);
+      res.render('notFound', { data: err.errors[0].message });
+    } else {
+      console.log('hello file deletede');
+      res.render('deleteResponse');
+    }
+  });
 };
