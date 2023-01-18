@@ -3,6 +3,7 @@ import User from '../models/user.js';
 import { unlink } from 'node:fs';
 import fs from 'fs';
 import dotenv from 'dotenv';
+import { createDocument } from '../models/document.model.js';
 dotenv.config();
 
 const GOOGLE_API_FOLDER_ID = process.env.GOOGLE_FOLDER_ID;
@@ -54,16 +55,19 @@ export const uploadFile = async (req, res) => {
           if (err) throw err;
           console.log(`${path} was deleted`);
         });
-        const data = 
-        res.render('successResponse', { fileData: req.file.originalname });
+        const data = res.render('successResponse', {
+          fileData: req.file.originalname,
+        });
       }
     }
   );
-//   let data = ''
-//   data.googleId=req.user.googleId
-//   data.filename = req.file.filename
-//   data.mimetype=req.file.mimetype
-//   data.file=req.originalname
+  const data = {};
+  data.folderId = GOOGLE_API_FOLDER_ID;
+  data.googleId = req.user.googleId;
+  data.filename = req.file.filename;
+  data.mimetype = req.file.mimetype;
+  data.originalname = req.file.originalname;
+  await createDocument(data);
 };
 
 // list all image file in
@@ -72,12 +76,15 @@ export const listFile = async (req, res) => {
     return res.render('error');
   }
   let token = '';
+  let googleId = '';
   let user = await User.findById(req.user._id).select({
     accessToken: 1,
+    googleId: 1,
     _id: 0,
   });
   if (user) {
     token = user.accessToken;
+    googleId = user.googleId;
   } else {
     token = req.user.accessToken;
   }
@@ -142,7 +149,7 @@ export const deleteFile = async (req, res) => {
       console.log('error', err.errors[0]);
       res.render('notFound', { data: err.errors[0].message });
     } else {
-      console.log('hello file deletede');
+      console.log('hello file deleted');
       res.render('deleteResponse');
     }
   });

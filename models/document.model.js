@@ -13,7 +13,11 @@ const documentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  file: {
+  originalname: {
+    type: String,
+    required: true,
+  },
+  folderId: {
     type: String,
     required: true,
   },
@@ -26,5 +30,9 @@ const documentSchema = new mongoose.Schema({
 const Document = mongoose.model('Document', documentSchema);
 
 export const createDocument = async (data) => {
-  return await Document.create(data)
-}
+  return await Document.create(data);
+};
+
+export const listDocument = async () => {
+  return await Document.find();
+};
