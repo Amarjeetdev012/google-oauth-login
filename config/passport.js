@@ -16,7 +16,6 @@ passport.use(
       passReqToCallback: true,
     },
     async function (request, accessToken, refreshToken, profile, done) {
-      console.log('first ======>>>>');
       const newUser = {
         googleId: profile.id,
         displayName: profile.displayName,
@@ -41,13 +40,10 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  console.log('second ======>>>>');
-
   done(null, user.id); //save only user id in server
 });
 
 passport.deserializeUser((id, done) => {
-  console.log('third ======>>>>');
   User.findById(id, (err, user) => {
     done(err, user);
   });
@@ -61,7 +57,7 @@ route.get(
       'https://www.googleapis.com/auth/userinfo.profile',
     ],
     accessType: 'offline',
-    prompt: 'consent',
+    // prompt: 'consent',
   })
 );
 
@@ -74,8 +70,6 @@ route.get(
 );
 
 route.get('/auth/google/success', (req, res) => {
-  console.log('four ======>>>>');
-
   if (!req.session.passport) {
     return res.render('error');
   }
