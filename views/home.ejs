@@ -11,10 +11,10 @@
 <body>
     <h1>you have succesfully logged in </h1>
     <ul>
-        <%= name %>
+      <h3>your name:</h3>   <%= name %>
     </ul>
     <form action="upload" method="POST" enctype="multipart/form-data">
-        <h4>Browse your file</h4>
+        <h4>slet your file to upload on drive</h4>
         <input type="file" name="files" multiple required /> <br><br>
         <input type="submit" value="Upload File" />
     </form>
@@ -23,6 +23,8 @@
     <form action="list" method="GET">
         <input type="submit" value="get list of files">
     </form><br><br>
+
+    <h2>insert file id which you want to delete</h2>
     <form action="delete" method="POST" enctype="application/x-www-form-urlencoded">
         <input type="text" name="id" id="id">
         <input type="submit" value="delete file">

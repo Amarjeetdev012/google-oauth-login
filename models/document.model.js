@@ -9,7 +9,7 @@ const documentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  filetype: {
+  mimetype: {
     type: String,
     required: true,
   },
@@ -25,4 +25,6 @@ const documentSchema = new mongoose.Schema({
 
 const Document = mongoose.model('Document', documentSchema);
 
-export default Document;
+export const createDocument = async (data) => {
+  return await Document.create(data)
+}

@@ -13,11 +13,9 @@
 
     <ol>
         <% data.forEach(function(data) { %>
-            <% if(data.mimeType=='image/png' ){ %>
-                <li> Name:<%= data.name %> <br> id:<%= data.id %> <br> mimetype:<%=data.mimeType%>
-                </li><br>
-                <% } %>
-                    <% }); %>
+            <li> Name:<%= data.name %> <br> id:<%= data.id %> <br> mimetype:<%=data.mimeType%>
+            </li><br>
+            <% }); %>
     </ol>
 </body>
 

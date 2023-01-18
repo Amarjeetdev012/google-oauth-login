@@ -28,7 +28,6 @@ export const uploadFile = async (req, res) => {
     access_token: token,
   });
   const path = file.path;
-  console.log(file);
   const drive = google.drive({
     version: 'v3',
     auth: OAuth2Client,
@@ -55,10 +54,16 @@ export const uploadFile = async (req, res) => {
           if (err) throw err;
           console.log(`${path} was deleted`);
         });
+        const data = 
         res.render('successResponse', { fileData: req.file.originalname });
       }
     }
   );
+//   let data = ''
+//   data.googleId=req.user.googleId
+//   data.filename = req.file.filename
+//   data.mimetype=req.file.mimetype
+//   data.file=req.originalname
 };
 
 // list all image file in
@@ -133,6 +138,40 @@ export const deleteFile = async (req, res) => {
   });
 
   const response = await drive.files.delete({ fileId: id }, (err, file) => {
+    if (err) {
+      console.log('error', err.errors[0]);
+      res.render('notFound', { data: err.errors[0].message });
+    } else {
+      console.log('hello file deletede');
+      res.render('deleteResponse');
+    }
+  });
+};
+
+export const downloadFile = async (req, res) => {
+  if (!req.session.passport) {
+    return res.render('error');
+  }
+  let token = '';
+  let user = await User.findById(req.user._id).select({
+    accessToken: 1,
+    _id: 0,
+  });
+  if (user) {
+    token = user.accessToken;
+  } else {
+    token = req.user.accessToken;
+  }
+  const OAuth2Client = new google.auth.OAuth2();
+
+  OAuth2Client.setCredentials({
+    access_token: token,
+  });
+  const drive = google.drive({
+    version: 'v3',
+    auth: OAuth2Client,
+  });
+  const response = await drive.files.copy({ fileId: id }, (err, file) => {
     if (err) {
       console.log('error', err.errors[0]);
       res.render('notFound', { data: err.errors[0].message });
