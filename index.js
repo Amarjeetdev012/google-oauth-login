@@ -28,7 +28,7 @@ app.use(
     secret: 'keyboard cat',
     resave: false,
     saveUninitialized: true,
-    cookie: { maxAge: 39600 },
+    cookie: { maxAge: 69600 },
     store: store,
   })
 );
@@ -36,6 +36,6 @@ connectDatabase();
 app.use(passport.initialize());
 app.use(passport.session());
 app.use('/', router);
-app.use('/', route)
+app.use('/', route);
 
 app.listen(PORT, console.log(`listening at ${PORT}`));

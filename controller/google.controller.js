@@ -27,6 +27,7 @@ export const uploadFile = async (req, res) => {
     access_token: token,
   });
   const path = file.path;
+  console.log(file)
   const drive = google.drive({
     version: 'v3',
     auth: OAuth2Client,
@@ -51,7 +52,7 @@ export const uploadFile = async (req, res) => {
       } else {
         unlink(path, (err) => {
           if (err) throw err;
-          console.log('path/file.txt was deleted');
+          console.log(`${path} was deleted`);
         });
         res.render('successResponse', { fileData: req.file.originalname });
       }
