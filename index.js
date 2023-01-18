@@ -7,8 +7,8 @@ import { connectDatabase } from './database/mongoose.database.js';
 import MongoStore from 'connect-mongo';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
-import router from './config/passport.js';
-import multer from 'multer';
+import router from './routes/route.routes.js';
+import route from './config/passport.js';
 
 const app = express();
 app.use(express.json());
@@ -36,5 +36,6 @@ connectDatabase();
 app.use(passport.initialize());
 app.use(passport.session());
 app.use('/', router);
+app.use('/', route)
 
 app.listen(PORT, console.log(`listening at ${PORT}`));

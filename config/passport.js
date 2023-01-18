@@ -1,13 +1,11 @@
 import { Strategy as GoogleStrategy } from 'passport-google-oauth2';
 import express from 'express';
-import { google } from 'googleapis';
-import { upload } from '../helpers/multer.helpers.js';
-import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
 import passport from 'passport';
 import User from '../models/user.js';
-const router = express.Router();
+
+const route = express.Router();
 
 passport.use(
   new GoogleStrategy(
@@ -18,6 +16,7 @@ passport.use(
       passReqToCallback: true,
     },
     async function (request, accessToken, refreshToken, profile, done) {
+      console.log('first ======>>>>');
       const newUser = {
         googleId: profile.id,
         displayName: profile.displayName,
@@ -42,16 +41,19 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
+  console.log('second ======>>>>');
+
   done(null, user.id); //save only user id in server
 });
 
 passport.deserializeUser((id, done) => {
+  console.log('third ======>>>>');
   User.findById(id, (err, user) => {
     done(err, user);
   });
 });
 
-router.get(
+route.get(
   '/auth/google',
   passport.authenticate('google', {
     scope: [
@@ -63,7 +65,7 @@ router.get(
   })
 );
 
-router.get(
+route.get(
   '/auth/google/callback',
   passport.authenticate('google', {
     successRedirect: '/auth/google/success',
@@ -71,65 +73,17 @@ router.get(
   })
 );
 
-router.get('/auth/google/success', (req, res) => {
+route.get('/auth/google/success', (req, res) => {
+  console.log('four ======>>>>');
+
   if (!req.session.passport) {
     return res.render('error');
   }
   res.render('home', { name: req.user.displayName });
 });
 
-router.get('/auth/google/failure', (req, res) => {
+route.get('/auth/google/failure', (req, res) => {
   return res.render('error');
 });
 
-// router.get('/auth/google/logout', (req,res) => {
-//   return res.render()
-// })
-router.post('/auth/google/upload', upload, async (req, res) => {
-  if (!req.session.passport) {
-    return res.render('error');
-  }
-  let file = req.file;
-  let token = '';
-  let user = await User.findById(req.user._id).select({
-    accessToken: 1,
-    _id: 0,
-  });
-  if (user) {
-    token = user.accessToken;
-  } else {
-    token = req.user.accessToken;
-  }
-  const OAuth2Client = new google.auth.OAuth2();
-  OAuth2Client.setCredentials({
-    access_token: token,
-  });
-  const path = file.path;
-  const drive = google.drive({
-    version: 'v3',
-    auth: OAuth2Client,
-  });
-  const fileMetadata = {
-    name: file.originalname,
-  };
-  const media = {
-    mimeType: file.mimetype,
-    body: fs.createReadStream(path),
-  };
-
-  const response = await drive.files.create(
-    {
-      resource: fileMetadata,
-      media: media,
-    },
-    (err, file) => {
-      if (err) {
-        console.log('error', err);
-      } else {
-        res.render('successResponse', { fileData: req.file.originalname });
-      }
-    }
-  );
-});
-
-export default router;
+export default route;
