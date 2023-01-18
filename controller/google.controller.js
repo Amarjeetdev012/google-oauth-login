@@ -27,7 +27,7 @@ export const uploadFile = async (req, res) => {
     access_token: token,
   });
   const path = file.path;
-  console.log(file)
+  console.log(file);
   const drive = google.drive({
     version: 'v3',
     auth: OAuth2Client,
@@ -61,7 +61,9 @@ export const uploadFile = async (req, res) => {
 };
 
 export const listFile = async (req, res) => {
-  console.log('hello');
+  if (!req.session.passport) {
+    return res.render('error');
+  }
   let token = '';
   let user = await User.findById(req.user._id).select({
     accessToken: 1,
@@ -76,22 +78,21 @@ export const listFile = async (req, res) => {
   OAuth2Client.setCredentials({
     access_token: token,
   });
+
   const drive = google.drive({
     version: 'v3',
     auth: OAuth2Client,
   });
+
   const response = await drive.files.list(
     {
-      corpora: 'drive',
-      driveId: GOOGLE_API_FOLDER_ID,
       supportsAllDrives: true,
     },
     (err, file) => {
       if (err) {
         console.log('error', err);
       } else {
-        console.log('req', req);
-        res.render('listResponse', { fileData: req.file.originalname });
+        res.render('listResponse', { data: file.data.files });
       }
     }
   );
