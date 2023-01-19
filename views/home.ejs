@@ -11,10 +11,11 @@
 <body>
     <h1>you have succesfully logged in </h1>
     <ul>
-      <h3>your name:</h3>   <%= name %>
+        <h3>your name:</h3>
+        <%= name %>
     </ul>
     <form action="upload" method="POST" enctype="multipart/form-data">
-        <h4>slet your file to upload on drive</h4>
+        <h4>select your file to upload on drive</h4>
         <input type="file" name="files" multiple required /> <br><br>
         <input type="submit" value="Upload File" />
     </form>

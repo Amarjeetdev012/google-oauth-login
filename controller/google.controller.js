@@ -3,7 +3,11 @@ import User from '../models/user.js';
 import { unlink } from 'node:fs';
 import fs from 'fs';
 import dotenv from 'dotenv';
-import { createDocument } from '../models/document.model.js';
+import {
+  createDocument,
+  documentById,
+  listDocument,
+} from '../models/document.model.js';
 dotenv.config();
 
 const GOOGLE_API_FOLDER_ID = process.env.GOOGLE_FOLDER_ID;
@@ -14,6 +18,7 @@ export const uploadFile = async (req, res) => {
     return res.render('error');
   }
   let file = req.file;
+  console.log('file', file);
   let token = '';
   let user = await User.findById(req.user._id).select({
     accessToken: 1,
@@ -29,6 +34,7 @@ export const uploadFile = async (req, res) => {
     access_token: token,
   });
   const path = file.path;
+  console.log('OAuth2Client', OAuth2Client);
   const drive = google.drive({
     version: 'v3',
     auth: OAuth2Client,
@@ -42,26 +48,19 @@ export const uploadFile = async (req, res) => {
     body: fs.createReadStream(path),
   };
 
-  const response = await drive.files.create(
-    {
-      resource: fileMetadata,
-      media: media,
-    },
-    (err, file) => {
-      if (err) {
-        console.log('error', err);
-      } else {
-        unlink(path, (err) => {
-          if (err) throw err;
-          console.log(`${path} was deleted`);
-        });
-        const data = res.render('successResponse', {
-          fileData: req.file.originalname,
-        });
-      }
-    }
-  );
+  const response = await drive.files.create({
+    resource: fileMetadata,
+    media: media,
+    fields: 'id,name',
+  });
+  const id = response.data.id;
+  console.log(response.data.name);
+  res.render('successResponse', {
+    fileData: req.file.originalname,
+  });
+
   const data = {};
+  data.imageId = id;
   data.folderId = GOOGLE_API_FOLDER_ID;
   data.googleId = req.user.googleId;
   data.filename = req.file.filename;
@@ -75,41 +74,16 @@ export const listFile = async (req, res) => {
   if (!req.session.passport) {
     return res.render('error');
   }
-  let token = '';
-  let googleId = '';
   let user = await User.findById(req.user._id).select({
     accessToken: 1,
     googleId: 1,
     _id: 0,
   });
-  if (user) {
-    token = user.accessToken;
-    googleId = user.googleId;
-  } else {
-    token = req.user.accessToken;
-  }
-  const OAuth2Client = new google.auth.OAuth2();
-  OAuth2Client.setCredentials({
-    access_token: token,
+  const googleId = user.googleId;
+  const list = await listDocument(googleId, GOOGLE_API_FOLDER_ID);
+  res.render('listResponse', {
+    data: list,
   });
-
-  const drive = google.drive({
-    version: 'v3',
-    auth: OAuth2Client,
-  });
-
-  const response = await drive.files.list(
-    {
-      supportsAllDrives: true,
-    },
-    (err, file) => {
-      if (err) {
-        console.log('error', err);
-      } else {
-        res.render('listResponse', { data: file.data.files });
-      }
-    }
-  );
 };
 
 // delete file from drive using id
@@ -159,11 +133,29 @@ export const downloadFile = async (req, res) => {
   if (!req.session.passport) {
     return res.render('error');
   }
+  const fileId = '';
+  await drive.permissions.create({
+    fileId: '',
+    requestBody: {
+      role: 'reader',
+      type: 'anyone',
+    },
+  });
+  const result = await drive.files.get({
+    fileId: '',
+    fields: 'webViewLink , webContentLink',
+  });
+
+  const downloadLink = result.data.webContentLink;
   let token = '';
   let user = await User.findById(req.user._id).select({
     accessToken: 1,
+    googleId: 1,
     _id: 0,
   });
+  const folderId = user.googleId;
+  let document = await documentById(folderId);
+  console.log('document', document);
   if (user) {
     token = user.accessToken;
   } else {

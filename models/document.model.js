@@ -9,6 +9,10 @@ const documentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  imageId: {
+    type: String,
+    required: true,
+  },
   mimetype: {
     type: String,
     required: true,
@@ -33,6 +37,10 @@ export const createDocument = async (data) => {
   return await Document.create(data);
 };
 
-export const listDocument = async () => {
-  return await Document.find();
+export const listDocument = async (googleId, folderId) => {
+  return await Document.find({ googleId: googleId, folderId: folderId });
+};
+
+export const documentById = async (id) => {
+  return await Document.findById({folderId:id});
 };

@@ -6,17 +6,58 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
 </head>
+<!-- 1. https://drive.google.com/thumbnail?id=[FILE ID]
+2. https://lh3.googleusercontent.com/d/[FILE ID]=s[FILE SIZE] -->
 
 <body>
     <h1>list of files are </h1>
-
     <ol>
         <% data.forEach(function(data) { %>
-            <li> Name:<%= data.name %> <br> id:<%= data.id %> <br> mimetype:<%=data.mimeType%>
-            </li><br>
+            <img src="https://drive.google.com/thumbnail?id=1bn9ldjMPtTR7JqTvOLXsT00XS4sLuqRt">
+            <li> Name:<%= data.filename %> <br> id:<%= data._id %> <br> mimetype:<%=data.mimetype%>
+            </li>
+            <form action="download" method="POST" enctype="multipart/form-data">
+                <input type="submit" id="id" value="<%= data._id %>" /><a
+                    href="http://localhost:3000/auth/google/download">
+                </a><br><br><br>
+            </form>
+
             <% }); %>
     </ol>
+
+    <script>
+        async function generateLink() {
+            const fileId = '<%= data._id %>'
+            await drive.permissions.create({
+                fileId: '<%= data._id %>',
+                requestBody: {
+                    role: 'reader',
+                    type: 'anyone',
+                },
+            });
+            const result = await drive.files.get({
+                fileId: '',
+                fields: 'webViewLink , webContentLink',
+            });
+
+            const downloadLink = result.data.webContentLink;
+            return downloadLink
+        }
+
+        $.ajax({
+            url: '/download',
+            method: 'POST',
+            success: (data) => {
+                generateLink()
+            },
+            error: (err) => {
+                console.log(err)
+            },
+        });
+
+    </script>
 </body>
 
 </html>
