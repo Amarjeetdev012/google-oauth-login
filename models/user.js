@@ -31,4 +31,9 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', UserSchema);
 
+export const  deleteUser = async(id) => {
+  console.log('id==============',id)
+  return await User.findByIdAndDelete({_id:id})
+}
+
 export default User;

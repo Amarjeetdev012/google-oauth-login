@@ -1,7 +1,8 @@
 import { google } from 'googleapis';
-import User from '../models/user.js';
+import User, { deleteUser } from '../models/user.js';
 import { unlink } from 'node:fs';
 import fs from 'fs';
+import session from 'express-session';
 import dotenv from 'dotenv';
 import {
   createDocument,
@@ -21,7 +22,6 @@ export const uploadFile = async (req, res) => {
   let token = '';
   let user = await User.findById(req.user._id).select({
     accessToken: 1,
-    _id: 0,
   });
   if (user) {
     token = user.accessToken;
@@ -29,6 +29,15 @@ export const uploadFile = async (req, res) => {
     token = req.user.accessToken;
   }
   const OAuth2Client = new google.auth.OAuth2();
+  const tokenTime = await (await OAuth2Client.getTokenInfo(token)).expiry_date;
+  const expiryDate = new Date(tokenTime);
+  const CurrDate = new Date();
+  if (CurrDate > expiryDate) {
+    await deleteUser(user._id);
+    req.session.destroy();
+    return res.render('expireToken');
+  }
+console.log('hello world')
   OAuth2Client.setCredentials({
     access_token: token,
   });
