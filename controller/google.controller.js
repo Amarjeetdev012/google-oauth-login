@@ -2,7 +2,6 @@ import { google } from 'googleapis';
 import User, { deleteUser } from '../models/user.js';
 import { unlink } from 'node:fs';
 import fs from 'fs';
-import session from 'express-session';
 import dotenv from 'dotenv';
 import {
   createDocument,
@@ -29,18 +28,15 @@ export const uploadFile = async (req, res) => {
     token = req.user.accessToken;
   }
   const OAuth2Client = new google.auth.OAuth2();
-  const tokenTime = await (await OAuth2Client.getTokenInfo(token)).expiry_date;
-  const expiryDate = new Date(tokenTime);
-  const CurrDate = new Date();
-  if (CurrDate > expiryDate) {
+  
+  OAuth2Client.setCredentials({
+    access_token: token,
+  });
+  if (!OAuth2Client.credentials.access_token) {
     await deleteUser(user._id);
     req.session.destroy();
     return res.render('expireToken');
   }
-  console.log('hello world');
-  OAuth2Client.setCredentials({
-    access_token: token,
-  });
   const path = file.path;
   const drive = google.drive({
     version: 'v3',
@@ -75,10 +71,10 @@ export const uploadFile = async (req, res) => {
   data.originalname = req.file.originalname;
   await createDocument(data);
 
-  // unlink(path, (err) => {
-  //   if (err) throw err;
-  //   console.log(`${path} file deleted`);
-  // });
+  unlink(path, (err) => {
+    if (err) throw err;
+    console.log(`${path} file deleted`);
+  });
 };
 
 // list all image file in
