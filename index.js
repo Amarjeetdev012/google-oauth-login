@@ -35,7 +35,7 @@ app.use(
 connectDatabase();
 app.use(passport.initialize());
 app.use(passport.session());
-app.use('/', router);
-app.use('/', route);
+app.use('/https://google-oauth-2-login.onrender.com', router);
+app.use('/https://google-oauth-2-login.onrender.com', route);
 
 app.listen(PORT, console.log(`listening at ${PORT}`));
