@@ -57,7 +57,7 @@ route.get(
       'https://www.googleapis.com/auth/userinfo.profile',
     ],
     accessType: 'offline',
-    prompt: 'consent',
+    // prompt: 'consent',
   })
 );
 
