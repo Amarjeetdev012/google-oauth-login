@@ -73,12 +73,12 @@ console.log('hello world')
   data.filename = req.file.filename;
   data.mimetype = req.file.mimetype;
   data.originalname = req.file.originalname;
-  await createDocument(data);
+  await createDocument(data)
 
-  unlink(path, (err) => {
-    if (err) throw err;
-    console.log(`${path} file deleted`);
-  });
+  // unlink(path, (err) => {
+  //   if (err) throw err;
+  //   console.log(`${path} file deleted`);
+  // });
 };
 
 // list all image file in
