@@ -5,7 +5,7 @@ import fs from 'fs';
 import dotenv from 'dotenv';
 import {
   createDocument,
-  documentById,
+  allDocument,
   listDocument,
 } from '../models/document.model.js';
 dotenv.config();
@@ -18,7 +18,6 @@ export const uploadFile = async (req, res) => {
     return res.render('error');
   }
   let file = req.file;
-  console.log('file', file);
   let token = '';
   let user = await User.findById(req.user._id).select({
     accessToken: 1,
@@ -34,7 +33,6 @@ export const uploadFile = async (req, res) => {
     access_token: token,
   });
   const path = file.path;
-  console.log('OAuth2Client', OAuth2Client);
   const drive = google.drive({
     version: 'v3',
     auth: OAuth2Client,
@@ -54,7 +52,7 @@ export const uploadFile = async (req, res) => {
     fields: 'id,name',
   });
   const id = response.data.id;
-  console.log(response.data.name);
+
   res.render('successResponse', {
     fileData: req.file.originalname,
   });
@@ -67,6 +65,12 @@ export const uploadFile = async (req, res) => {
   data.mimetype = req.file.mimetype;
   data.originalname = req.file.originalname;
   await createDocument(data);
+
+  unlink(path, (err) => {
+    if (err) throw err;
+    console.log(`${path} file deleted`);
+  });
+  
 };
 
 // list all image file in
@@ -81,6 +85,7 @@ export const listFile = async (req, res) => {
   });
   const googleId = user.googleId;
   const list = await listDocument(googleId, GOOGLE_API_FOLDER_ID);
+  console.log('list===============', list);
   res.render('listResponse', {
     data: list,
   });
@@ -134,27 +139,16 @@ export const downloadFile = async (req, res) => {
     return res.render('error');
   }
   const fileId = '';
-  await drive.permissions.create({
-    fileId: '',
-    requestBody: {
-      role: 'reader',
-      type: 'anyone',
-    },
-  });
-  const result = await drive.files.get({
-    fileId: '',
-    fields: 'webViewLink , webContentLink',
-  });
-
-  const downloadLink = result.data.webContentLink;
   let token = '';
   let user = await User.findById(req.user._id).select({
     accessToken: 1,
     googleId: 1,
     _id: 0,
   });
-  const folderId = user.googleId;
-  let document = await documentById(folderId);
+  const googleId = user.googleId;
+  let document = await allDocument(googleId);
+  console.log('hello world');
+
   console.log('document', document);
   if (user) {
     token = user.accessToken;
@@ -170,13 +164,16 @@ export const downloadFile = async (req, res) => {
     version: 'v3',
     auth: OAuth2Client,
   });
-  const response = await drive.files.copy({ fileId: id }, (err, file) => {
-    if (err) {
-      console.log('error', err.errors[0]);
-      res.render('notFound', { data: err.errors[0].message });
-    } else {
-      console.log('hello file deletede');
-      res.render('deleteResponse');
-    }
+  await drive.permissions.create({
+    fileId: '',
+    requestBody: {
+      role: 'reader',
+      type: 'anyone',
+    },
   });
+  const result = await drive.files.get({
+    fileId: '',
+    fields: 'webViewLink , webContentLink',
+  });
+  const downloadLink = result.data.webContentLink;
 };

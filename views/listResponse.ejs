@@ -15,42 +15,92 @@
     <h1>list of files are </h1>
     <ol>
         <% data.forEach(function(data) { %>
-            <img src="https://drive.google.com/thumbnail?id=1bn9ldjMPtTR7JqTvOLXsT00XS4sLuqRt">
+            <!-- <img src="https://drive.google.com/thumbnail?id=1bn9ldjMPtTR7JqTvOLXsT00XS4sLuqRt"> -->
+            <img src="https://drive.google.com/thumbnail?id=<%= data.imageId %>">
             <li> Name:<%= data.filename %> <br> id:<%= data._id %> <br> mimetype:<%=data.mimetype%>
             </li>
             <form action="download" method="POST" enctype="multipart/form-data">
-                <input type="submit" id="id" value="<%= data._id %>" /><a
+                <input type="submit" id="id" value="Download file" /><a
                     href="http://localhost:3000/auth/google/download">
                 </a><br><br><br>
             </form>
-
+            <tbody id="tbody" class="bg-white divide-y divide-gray-200">
+            </tbody>
             <% }); %>
     </ol>
 
     <script>
-        async function generateLink() {
-            const fileId = '<%= data._id %>'
-            await drive.permissions.create({
-                fileId: '<%= data._id %>',
-                requestBody: {
-                    role: 'reader',
-                    type: 'anyone',
-                },
-            });
-            const result = await drive.files.get({
-                fileId: '',
-                fields: 'webViewLink , webContentLink',
-            });
+        const generateLink = async (data) => {
+            let htmlToAppend = ``;
+            for (let i = 0; i < data.length; i++) {
+                htmlToAppend += generateData(data[i]);
+            }
 
-            const downloadLink = result.data.webContentLink;
-            return downloadLink
+            $("#tbody").html(htmlToAppend);
         }
+        const generateRow = async ({ id }) => {
+            try {
+                const fileId = '<%= data._id %>'
+                await drive.permissions.create({
+                    fileId: '<%= data._id %>',
+                    requestBody: {
+                        role: 'reader',
+                        type: 'anyone',
+                    },
+                });
+                const result = await drive.files.get({
+                    fileId: '',
+                    fields: 'webViewLink , webContentLink',
+                });
+
+                const downloadLink = result.data.webContentLink;
+                return downloadLink
+                return
+                `<tr id='${id}' class="capitalize hover:bg-gray-100">
+                            <td class="px-6 py-4 border whitespace-nowrap text-sm font-medium text-gray-900">
+                                ${username}
+                            </td>
+                            <td class="px-6 py-4 border whitespace-nowrap text-sm font-medium text-gray-900">
+                                ${firstName}
+                            </td>
+                            <td class="px-6 py-4 border whitespace-nowrap text-sm text-gray-500">
+                                ${lastName}
+                            </td>
+                            <td class="px-6 py-4 border whitespace-nowrap text-sm text-gray-500">
+                               ${email}
+                            </td>
+                            <td class="px-6 py-4 border whitespace-nowrap text-sm text-gray-500">
+                                ${phone}
+                            </td>
+                            
+                        </tr>`
+            } catch (error) {
+                console.log(error);
+                return '';
+            }
+        }
+        const fileId = '<%= data._id %>'
+        await drive.permissions.create({
+            fileId: '<%= data._id %>',
+            requestBody: {
+                role: 'reader',
+                type: 'anyone',
+            },
+        });
+        const result = await drive.files.get({
+            fileId: '',
+            fields: 'webViewLink , webContentLink',
+        });
+
+        const downloadLink = result.data.webContentLink;
+        return downloadLink
+
 
         $.ajax({
             url: '/download',
             method: 'POST',
             success: (data) => {
-                generateLink()
+                generateLink(data)
             },
             error: (err) => {
                 console.log(err)

@@ -41,6 +41,6 @@ export const listDocument = async (googleId, folderId) => {
   return await Document.find({ googleId: googleId, folderId: folderId });
 };
 
-export const documentById = async (id) => {
-  return await Document.findById({folderId:id});
+export const allDocument = async (googleId) => {
+  return await Document.find({ googleId: googleId });
 };
