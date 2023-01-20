@@ -70,7 +70,6 @@ export const uploadFile = async (req, res) => {
     if (err) throw err;
     console.log(`${path} file deleted`);
   });
-  
 };
 
 // list all image file in
@@ -85,7 +84,6 @@ export const listFile = async (req, res) => {
   });
   const googleId = user.googleId;
   const list = await listDocument(googleId, GOOGLE_API_FOLDER_ID);
-  console.log('list===============', list);
   res.render('listResponse', {
     data: list,
   });
@@ -132,48 +130,4 @@ export const deleteFile = async (req, res) => {
       res.render('deleteResponse');
     }
   });
-};
-
-export const downloadFile = async (req, res) => {
-  if (!req.session.passport) {
-    return res.render('error');
-  }
-  const fileId = '';
-  let token = '';
-  let user = await User.findById(req.user._id).select({
-    accessToken: 1,
-    googleId: 1,
-    _id: 0,
-  });
-  const googleId = user.googleId;
-  let document = await allDocument(googleId);
-  console.log('hello world');
-
-  console.log('document', document);
-  if (user) {
-    token = user.accessToken;
-  } else {
-    token = req.user.accessToken;
-  }
-  const OAuth2Client = new google.auth.OAuth2();
-
-  OAuth2Client.setCredentials({
-    access_token: token,
-  });
-  const drive = google.drive({
-    version: 'v3',
-    auth: OAuth2Client,
-  });
-  await drive.permissions.create({
-    fileId: '',
-    requestBody: {
-      role: 'reader',
-      type: 'anyone',
-    },
-  });
-  const result = await drive.files.get({
-    fileId: '',
-    fields: 'webViewLink , webContentLink',
-  });
-  const downloadLink = result.data.webContentLink;
 };
