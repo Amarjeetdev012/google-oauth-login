@@ -37,7 +37,7 @@ export const uploadFile = async (req, res) => {
     req.session.destroy();
     return res.render('expireToken');
   }
-console.log('hello world')
+  console.log('hello world');
   OAuth2Client.setCredentials({
     access_token: token,
   });
@@ -73,7 +73,7 @@ console.log('hello world')
   data.filename = req.file.filename;
   data.mimetype = req.file.mimetype;
   data.originalname = req.file.originalname;
-  await createDocument(data)
+  await createDocument(data);
 
   // unlink(path, (err) => {
   //   if (err) throw err;
