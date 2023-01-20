@@ -1,2 +1,9 @@
 node_modules
 .env
+
+GOOGLE_CLIENT_ID=714430258501-pfs3l8e08r7qr6gr29pbvjfsboben75r.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+GOOGLE_REDIRECT_URL=http://localhost:3000/auth/google/callback
+MONGO_URI=mongodb+srv://amarjeet:8ckRS2Equ0wiGgKx@cluster0.9lvsazp.mongodb.net/test
+PORT=3000
+GOOGLE_FOLDER_ID=1_ZDVZwBZ3vpPKzSqcKwBGMVBEt-0kYSy
