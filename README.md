@@ -9,3 +9,6 @@ make a file .env add your oauth2 credentials and PORT
 save image folder in database
 add download button
 and show preview of image
+
+<!-- 1. https://drive.google.com/thumbnail?id=[FILE ID]
+2. https://lh3.googleusercontent.com/d/[FILE ID]=s[FILE SIZE] -->
